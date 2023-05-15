@@ -1,0 +1,13 @@
+#lang racket
+
+( define ( iota n )
+   ( cond
+      ( ( = n 0 ) '() )
+      ( else
+        ( snoc n ( iota ( - n 1 ) ) )
+      )
+   )
+)
+
+
+

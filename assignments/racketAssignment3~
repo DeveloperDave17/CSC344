@@ -1,0 +1,11 @@
+#lang racket
+
+( define ( count-down n )
+   ( cond
+      ( ( not ( zero? n ) )
+        ( display n ) ( display "/n" )
+        ( count-down ( - n 1 ) )
+      )
+   )
+)
+

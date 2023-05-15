@@ -1,0 +1,223 @@
+#lang racket
+
+(require 2htdp/image)
+
+( define ( count-down n )
+   ( cond
+      ( ( > n 0 )
+        ( display n ) ( display "\n" )
+        ( count-down ( - n 1 ) )
+      )
+   )
+)
+
+( define ( count-up n )
+   ( cond
+      ( ( > n 0 )
+        ( count-up ( - n 1 ) )
+        ( display n ) ( display "\n" )
+      )
+   )
+)
+
+( define ( line-of-stars n )
+   ( cond
+      ( ( > n 0 )
+        ( display "*" )
+        ( line-of-stars ( - n 1 ) )
+      )
+   )
+)
+
+( define ( triangle-of-stars n )
+   ( cond
+      ( ( > n 0 )
+        ( triangle-of-stars ( - n 1 ) )
+        ( line-of-stars n )
+        ( display "\n" )
+      )
+    )
+)
+
+( define ( flip-coin )
+   ( define rv ( random 2 ) )
+   ( cond
+      ( ( = rv 0 ) 'h )
+      ( ( = rv 1 ) 't)
+   )
+)
+
+( define ( flip-for-difference stopping-point )
+   ( flip-for-difference-helper stopping-point ( * stopping-point 2 ) )
+)
+
+( define ( flip-for-difference-helper current-value stopping-point )
+   ( cond (
+           ( not ( or ( = current-value 0 ) ( = current-value stopping-point ) ) )
+           ( define outcome ( flip-coin ) )
+           ( display outcome ) ( display " " )
+           ( cond (
+                   ( eq? outcome 'h )
+                   ( flip-for-difference-helper ( - current-value 1 ) stopping-point)
+                  )
+                  
+                  (
+                   ( eq? outcome 't )
+                   ( flip-for-difference-helper ( + current-value 1 ) stopping-point )
+                  )
+            )
+          )
+   )
+)
+
+( define ( ccr radius difference )
+   ( cond (( > radius 0 )
+           ( define ( rgb ) ( random 0 256 ) )
+           ( define ( rc ) ( color ( rgb ) ( rgb ) ( rgb ) ) )
+           ( overlay ( ccr ( - radius difference ) difference) ( circle radius 'solid ( rc ) ) )
+          )
+          ( ( = radius 0 ) empty-image )
+   )
+)
+
+( define ( cca radius difference color1 color2 )
+   ( cca-helper radius difference color1 color2 1 )
+)
+   
+( define ( cca-helper radius difference color1 color2 current-color-num )
+   ( cond ( ( > radius 0 )
+            ( cond ( ( = current-color-num 1 )
+                     ( overlay ( cca-helper ( - radius difference ) difference color1 color2 2 ) ( circle radius 'solid color1 ) ) )
+                   ( ( = current-color-num 2 )
+                     ( overlay ( cca-helper ( - radius difference ) difference color1 color2 1 ) ( circle radius 'solid color2 ) ) )
+            )
+           )
+           ( ( = radius 0 ) empty-image )
+   )
+)
+
+( define ( ccs radius difference colors )
+   ( define numColors ( length colors ) )
+   ( ccs-helper radius difference colors numColors )
+)
+
+
+( define ( ccs-helper radius difference colors numColors )
+        ( cond (( > radius 0 )
+           ( define ( colorNum ) ( random numColors ) )
+           ( define color ( list-ref colors ( colorNum ) ) )
+           ( overlay ( ccs-helper ( - radius difference ) difference colors numColors ) ( circle radius 'solid color ) )
+          )
+          ( ( = radius 0 ) empty-image )
+        )
+)
+
+; Square tile functions
+
+; Generate a row of tiles
+
+( define ( row-of-tiles n tile )
+   ( cond
+      ( ( = n 0 )
+        empty-image
+      )
+      ( ( > n 0 )
+        ( beside ( row-of-tiles ( - n 1 ) tile ) ( tile ) )
+      )
+   )
+)
+
+; Generate a rectangle of tiles of a specified row count, column count,
+; and tile type
+
+( define ( rectangle-of-tiles r c tile )
+   ( cond
+      ( ( = r 0 )
+        empty-image
+      )
+      ( ( > r 0 )
+        ( above
+          ( rectangle-of-tiles ( - r 1 ) c tile ) ( row-of-tiles c tile ) )
+      )
+   )
+)
+
+; Generate a square of tiles of a specified side length and tile type
+
+( define ( square-of-tiles n tile )
+   ( rectangle-of-tiles n n tile )
+)
+
+; Generator for a randomly colored tile
+
+( define ( random-color-tile  )
+   ( overlay
+     ( square 40 "outline" "black" )
+     ( square 40 "solid" ( random-color ) )
+   )
+)
+
+; Generator for a random color
+
+( define ( random-color )
+   ( define ( rgb ) ( random 0 256 ) )
+   ( color ( rgb ) ( rgb ) ( rgb ) )
+)
+
+; Generator for a randomly colored dot tile
+
+( define ( dot-tile )
+   ( overlay
+     ( circle 35 "solid" ( random-color ) )
+     ( square 100 "solid" "white" )
+   )
+)
+
+; Generator for a ccs tile
+
+( define ( ccs-tile )
+   ( define colors ( random-colors 3 ) )
+   ( overlay
+     ( ccs 35 5 colors )
+     ( square 100 "solid" "white" )
+   )
+)
+
+; randomly generate a list of colors of size n
+
+( define ( random-colors n )
+   ( cond ( ( > n 0 )
+            ( cons ( random-color ) ( random-colors ( - n 1 ) ) )
+        )
+        ( ( = n 0 ) empty )
+    )
+)
+
+; generates a randomly colored diamond tile
+
+( define ( diamond-tile )
+   ( define diamondColor ( random-color ) )
+   ( overlay ( rotate 45 ( square 30 "solid" "white" ) )
+             ( rotate 45 ( square 40 "solid" diamondColor ) )
+             ( rotate 45 ( square 50 "solid" "white" ) )
+             ( rotate 45 ( square 60 "solid" diamondColor ) )
+             ( square 100 "solid" "white" )
+   )
+)
+
+; generates a randomly colored and angled square within a white tile
+
+( define ( wild-square-tile )
+   ( define squareColor ( random-color ) )
+   ( define angle ( random 0 90 ) )
+   ( overlay
+     ( rotate angle ( square 30 "solid" "white" ) )
+     ( rotate angle ( square 40 "solid" squareColor ) )
+     ( rotate angle ( square 50 "solid" "white" ) )
+     ( rotate angle ( square 60 "solid" squareColor ) )
+     ( square 100 "solid" "white" )
+   )
+)
+
+
+

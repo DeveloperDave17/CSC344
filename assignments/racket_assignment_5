@@ -1,0 +1,200 @@
+#lang racket
+
+( require 2htdp/image)
+
+( define ( iota n )
+   ( cond
+      ( ( = n 0 ) '() )
+      ( else
+        ( snoc n ( iota ( - n 1 ) ) )
+      )
+   )
+)
+
+
+( define ( snoc n l )
+   ( cond
+      ( ( empty? l )
+        ( list n )
+      )
+      ( else
+        ( cons ( car l ) ( snoc n ( cdr l ) ) )
+      )
+   )
+)
+
+( define ( same n obj )
+   ( cond
+      ( ( = n 0 ) '() )
+      ( else
+        ( cons obj ( same ( - n 1 ) obj) )
+      )
+   )
+)
+
+( define ( alternator n l )
+   ( cond
+      ( ( = n 0 ) '() )
+      ( else
+        ( cons ( car l ) ( alternator ( - n 1 ) ( snoc ( car l ) ( cdr l ) ) ) )
+      )
+   )
+)
+
+( define ( sequence n num )
+   ( map ( lambda (x) ( * x num ) ) ( iota n ) )
+ )
+
+( define ( a-count l )
+   ( cond
+      ( ( empty? l) '() )
+      ( else
+        ( append ( iota ( car l ) ) ( a-count ( cdr l ) ) )
+      )
+   )
+)
+
+( define ( r-count l )
+   ( cond
+      ( ( empty? l ) '() )
+      ( else
+        ( append ( same ( car l ) ( car l ) ) ( r-count ( cdr l ) ) )
+      )
+   )
+)
+
+( define ( zip l1 l2 )
+   ( cond
+      ( ( empty? l1 ) '() )
+      ( else
+        ( cons ( list* ( car l1 ) ( car l2 ) ) ( zip ( cdr l1 ) ( cdr l2 ) ) )
+      )
+   )
+)
+
+( define ( assoc obj l )
+   ( cond
+      ( ( empty? l ) '() )
+      ( ( eq? obj ( caar l ) ) ( car l ) )
+      ( else ( assoc obj ( cdr l ) ) )
+   )
+)
+
+( define scale-zip-CM
+   ( zip ( iota 7 ) '("C" "D" "E" "F" "G" "A" "B") )
+)
+
+( define scale-zip-short-Am
+   ( zip ( iota 7 ) '("A/2" "B/2" "C/2" "D/2" "E/2" "F/2" "G/2") )
+)
+
+( define scale-zip-short-low-Am
+   ( zip ( iota 7 ) '("A,/2" "B,/2" "C,/2" "D,/2" "E,/2" "F,/2" "G,/2") )
+)
+
+( define scale-zip-short-low-blues-Dm
+   ( zip ( iota 7 ) '("D,/2" "F,/2" "G,/2" "_A,/2" "A,/2" "c,/2" "d,/2") )
+)
+
+( define scale-zip-wholetone-C
+   ( zip ( iota 7 ) '("C" "D" "E" "^F" "^G" "^A" "c") )
+)
+
+( define ( nr->note n al )
+   ( cond
+      ( ( eq? n ( caar al ) ) ( cdar al ) )
+      ( else ( nr->note n ( cdr al ) ) )
+   )
+)
+
+( define ( nrs->notes nl al )
+   ( map ( lambda (x) ( nr->note x al ) ) nl )
+)
+
+( define ( nrs->abc nl al )
+   ( string-join ( nrs->notes nl al ) )
+)
+
+( define ( stella al )
+   ( foldr overlay empty-image ( map ( lambda (x) ( square ( car x ) 'solid ( cdr x ) ) ) al ) )
+)
+
+( define pitch-classes '( c d e f g a b ) )
+( define color-names '( blue green brown purple red yellow orange ) )
+
+( define ( box color )
+   ( overlay
+     ( square 30 'solid color )
+     ( square 35 'solid 'black )
+   )
+)
+
+( define boxes
+   ( list
+     ( box "blue" )
+     ( box "green" )
+     ( box "brown" )
+     ( box "purple" )
+     ( box "red" )
+     ( box "gold" )
+     ( box "orange" )
+   )
+)
+
+( define pc-a-list ( zip pitch-classes color-names ) )
+( define cb-a-list ( zip color-names boxes ) )
+
+( define ( pc->color pc )
+   ( cdr ( assoc pc pc-a-list ) )
+)
+
+( define ( color->box color )
+   ( cdr ( assoc color cb-a-list ) )
+)
+
+( define ( play pitches )
+   ( foldr beside empty-image ( map ( lambda (c) ( color->box c ) ) ( map ( lambda (pitch) ( pc->color pitch ) ) pitches ) ) )
+ )
+
+( define AI ( text "A" 36 "orange" ) )
+( define BI ( text "B" 36 "red" ) )
+( define CI ( text "C" 36 "blue" ) )
+( define DI ( text "D" 36 "green" ) )
+( define EI ( text "E" 36 "Cornflower Blue" ) )
+( define FI ( text "F" 36 "Firebrick" ) )
+( define GI ( text "G" 36 "Pink" ) )
+( define HI ( text "H" 36 "Yellow" ) )
+( define II ( text "I" 36 "Maroon" ) )
+( define JI ( text "J" 36 "Cornsilk" ) )
+( define KI ( text "K" 36 "Medium Sea Green" ) )
+( define LI ( text "L" 36 "Dodger Blue" ) )
+( define MI ( text "M" 36 "Light Cyan" ) )
+( define NI ( text "N" 36 "Tomato" ) )
+( define OI ( text "O" 36 "Black" ) )
+( define PI ( text "P" 36 "Hot Pink" ) )
+( define QI ( text "Q" 36 "Gold" ) )
+( define RI ( text "R" 36 "Dark Khaki" ) )
+( define SI ( text "S" 36 "Turquoise" ) )
+( define TI ( text "T" 36 "Dark Magenta" ) )
+( define UI ( text "U" 36 "Light Grey" ) )
+( define VI ( text "V" 36 "Rosy Brown" ) )
+( define WI ( text "W" 36 "Dark Slate Blue" ) )
+( define XI ( text "X" 36 "Green Yellow" ) )
+( define YI ( text "Y" 36 "Dark Orange" ) )
+( define ZI ( text "Z" 36 "Navajo White" ) )
+
+( define alphabet '(A B C D E F G H I J K L M N O P Q R S T U V W X Y Z) )
+( define alphapic ( list AI BI CI DI EI FI GI HI II JI KI LI MI NI OI PI QI RI SI TI UI VI WI XI YI ZI ) )
+
+( define a->i ( zip alphabet alphapic ) )
+
+( define ( letter->image letter )
+   ( cdr ( assoc letter a->i ) )
+)
+
+( define ( gcs letters )
+   ( foldr beside empty-image ( map ( lambda (letter) ( letter->image letter ) ) letters ) )
+)
+
+
+

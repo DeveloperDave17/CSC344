@@ -1,0 +1,5 @@
+#lang racket
+
+( define ( hello reference )
+   ( display ( string-append "Hello there, " reference "!\n" ) )
+)
